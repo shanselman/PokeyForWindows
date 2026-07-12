@@ -223,8 +223,6 @@ jobs:
           | `PokeyForWindows-$tag-win-arm64.zip` | ARM64 Windows |
 
           Both assets contain a signed, self-contained single-file executable.
-          After the community manifest is accepted, install with
-          `winget install Hanselman.PokeyForWindows`.
           "@ -replace "^[ ]{10}", "" | Set-Content release-notes.md -Encoding utf8NoBOM
 
           gh release create $tag `
@@ -233,13 +231,3 @@ jobs:
             --generate-notes `
             --notes-file release-notes.md `
             artifacts\*.zip
-
-  winget-submit:
-    needs: build
-    if: github.ref_type == 'tag'
-    permissions:
-      contents: read
-    uses: ./.github/workflows/winget-submit.yml
-    with:
-      tag: ${{ github.ref_name }}
-    secrets: inherit

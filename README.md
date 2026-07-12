@@ -26,16 +26,6 @@ Download the latest signed release from
 Each ZIP contains a self-contained, single-file executable; a separate .NET
 installation is not required.
 
-After its community manifest is accepted, install or update with Windows
-Package Manager:
-
-```powershell
-winget install Hanselman.PokeyForWindows
-winget upgrade Hanselman.PokeyForWindows
-```
-
-The portable command alias is `pokey`.
-
 ## Use
 
 1. Start `PokeyForWindows.exe`. The pointer is off on first launch.
@@ -95,39 +85,6 @@ The release workflow refuses to replace an existing release and verifies that
 the tag still points to the triggering commit before creating the GitHub
 Release. Treat published tags and assets as immutable: publish a new version
 instead of replacing them.
-
-Updates are distributed as new GitHub Releases and through WinGet package
-`Hanselman.PokeyForWindows`. The WinGet submission workflow is reusable and
-can also be run manually for an existing tag.
-
-### Release configuration
-
-Configure these repository secrets:
-
-- `AZURE_CLIENT_ID`
-- `AZURE_CLIENT_SECRET`
-- `AZURE_SUBSCRIPTION_ID`
-- `AZURE_TENANT_ID`
-- `WINGET_CREATE_GITHUB_TOKEN` (a token permitted to submit to
-  `microsoft\winget-pkgs`)
-
-These repository variables are optional overrides. The workflow defaults to
-the same signing endpoint, account, and certificate profile as the other
-Hanselman Windows utilities:
-
-- `AZURE_TRUSTED_SIGNING_ENDPOINT`
-- `AZURE_TRUSTED_SIGNING_ACCOUNT`
-- `AZURE_CERTIFICATE_PROFILE_NAME`
-
-For a release, create and push an exact semantic-version tag:
-
-```powershell
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-Manual workflow runs may explicitly allow unsigned artifacts for testing, but
-an unsigned run can never create a tagged release.
 
 ## License
 
