@@ -22,6 +22,10 @@
             Visibility="Collapsed">
             <Canvas.RenderTransform>
                 <TransformGroup>
+                    <ScaleTransform
+                        x:Name="DepthScale"
+                        CenterX="18"
+                        CenterY="2" />
                     <TranslateTransform x:Name="JabTranslation" />
                     <RotateTransform
                         x:Name="PointerRotation"

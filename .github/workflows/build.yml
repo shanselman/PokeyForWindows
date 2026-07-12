@@ -52,27 +52,31 @@ jobs:
         shell: pwsh
         run: throw "Configure Azure Trusted Signing, or explicitly allow an unsigned manual non-tag build."
 
-      - name: Set version from tag
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4
+        with:
+          versionSpec: 6.4.x
+
+      - name: Calculate version
+        uses: gittools/actions/gitversion/execute@v4
+        id: gitversion
+
+      - name: Set version environment variables
         shell: pwsh
         env:
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          if ($env:REF_TYPE -eq "tag") {
-            if ($env:REF_NAME -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
-              throw "Release tag '$env:REF_NAME' must match vX.Y.Z exactly."
-            }
-            $version = $Matches.version
-          } else {
-            $version = "0.0.0-ci.$env:RUN_NUMBER"
+          if ($env:REF_TYPE -eq "tag" -and $env:REF_NAME -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Release tag '$env:REF_NAME' must match vX.Y.Z exactly."
           }
 
-          $numericVersion = ($version -split "-", 2)[0]
-          $parts = $numericVersion.Split(".")
-          $assemblyVersion = "$($parts[0]).$($parts[1]).$($parts[2]).0"
+          $version = '${{ steps.gitversion.outputs.semVer }}'
+          $fullVersion = '${{ steps.gitversion.outputs.fullSemVer }}'
+          $assemblyVersion = "${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}.0"
 
           "VERSION=$version" >> $env:GITHUB_ENV
+          "FULLVERSION=$fullVersion" >> $env:GITHUB_ENV
           "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
 
       - name: Restore
@@ -98,7 +102,7 @@ jobs:
             /p:Version=$env:VERSION `
             /p:AssemblyVersion=$env:ASSEMBLY_VERSION `
             /p:FileVersion=$env:ASSEMBLY_VERSION `
-            /p:AssemblyInformationalVersion=$env:VERSION
+            /p:AssemblyInformationalVersion=$env:FULLVERSION
 
       - name: Publish ARM64
         shell: pwsh
@@ -114,7 +118,7 @@ jobs:
             /p:Version=$env:VERSION `
             /p:AssemblyVersion=$env:ASSEMBLY_VERSION `
             /p:FileVersion=$env:ASSEMBLY_VERSION `
-            /p:AssemblyInformationalVersion=$env:VERSION
+            /p:AssemblyInformationalVersion=$env:FULLVERSION
 
       - name: Azure login
         if: env.HAS_AZURE_SIGNING == 'true'

@@ -9,6 +9,9 @@ internal readonly record struct TapEffect(
     double FlashSize,
     double FlashRotation,
     double HandTravel,
+    double PullbackScale,
+    double ImpactScale,
+    double ImpactOvershoot,
     TimeSpan HandDuration,
     bool ShowSecondaryFlash);
 
@@ -26,7 +29,10 @@ internal sealed class TapSeriesController
 
     private static readonly double[] FlashSizes = [48, 68, 94, 128, 148];
     private static readonly double[] FlashRotations = [-8, 5, -4, 8, 0];
-    private static readonly double[] HandTravel = [4, 8, 14, 22];
+    private static readonly double[] HandTravel = [6, 14, 28, 52];
+    private static readonly double[] PullbackScales = [0.98, 0.94, 0.88, 0.78];
+    private static readonly double[] ImpactScales = [1.01, 1.03, 1.06, 1.10];
+    private static readonly double[] ImpactOvershoots = [1, 3, 6, 10];
 
     private long _lastTapTimestamp;
     private int _tapNumber;
@@ -57,6 +63,9 @@ internal sealed class TapSeriesController
             FlashSizes[flashArrayIndex],
             FlashRotations[flashArrayIndex],
             HandTravel[intensity],
+            PullbackScales[intensity],
+            ImpactScales[intensity],
+            ImpactOvershoots[intensity],
             HandDurations[intensity],
             intensity == 3 && _tapNumber % 2 == 0);
     }

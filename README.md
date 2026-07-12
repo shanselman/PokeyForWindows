@@ -84,11 +84,12 @@ Published files are written beneath `.\artifacts\publish\win-x64\` and
 
 ## Releases and updates
 
-Versions are derived from exact `vX.Y.Z` Git tags. A tagged build runs the
-interop harness before publishing x64 and ARM64 self-contained single-file
-executables. Azure Trusted Signing signs both executables, and the workflow
-verifies each Authenticode signature before creating the ZIPs. Tagged
-releases fail rather than publish unsigned binaries.
+Versions are calculated by GitVersion using `GitVersion.yml`; exact `vX.Y.Z`
+tags produce release versions. A tagged build runs the interop harness before
+publishing x64 and ARM64 self-contained single-file executables. Azure Trusted
+Signing signs both executables, and the workflow verifies each Authenticode
+signature before creating the ZIPs. Tagged releases fail rather than publish
+unsigned binaries.
 
 The release workflow refuses to replace an existing release and verifies that
 the tag still points to the triggering commit before creating the GitHub

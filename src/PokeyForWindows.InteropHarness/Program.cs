@@ -59,6 +59,18 @@ static void TapSeriesEscalatesAndCaps()
     AssertEqual(3, fourth.Intensity, "fourth intensity");
     AssertEqual(3, sixth.Intensity, "intensity cap");
     AssertTrue(sixth.ShowSecondaryFlash, "sixth tap should combine flashes");
+    AssertTrue(
+        fourth.HandTravel > first.HandTravel,
+        "rapid clicks should pull back farther");
+    AssertTrue(
+        fourth.PullbackScale < first.PullbackScale,
+        "rapid clicks should recede farther into depth");
+    AssertTrue(
+        fourth.ImpactScale > first.ImpactScale,
+        "rapid clicks should strike toward the viewer");
+    AssertTrue(
+        fourth.ImpactOvershoot > first.ImpactOvershoot,
+        "rapid clicks should overshoot harder");
 }
 
 static void TapSeriesResetsAfterIdle()

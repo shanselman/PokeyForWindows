@@ -1,0 +1,12 @@
+mode: ContinuousDelivery
+tag-prefix: 'v'
+assembly-versioning-scheme: MajorMinorPatch
+
+branches:
+  main:
+    regex: ^(master|main)$
+    label: ''
+    increment: Patch
+
+ignore:
+  sha: []

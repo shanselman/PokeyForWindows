@@ -105,7 +105,8 @@ public partial class OverlayWindow : Window
             effect.FlashSize,
             effect.FlashRotation,
             localX,
-            localY);
+            localY,
+            GetImpactTime(effect));
 
         if (effect.ShowSecondaryFlash)
         {
@@ -118,7 +119,8 @@ public partial class OverlayWindow : Window
                 effect.FlashSize * 0.58,
                 -effect.FlashRotation - 11,
                 localX - 10,
-                localY + 8);
+                localY + 8,
+                GetImpactTime(effect));
         }
     }
 
@@ -152,21 +154,28 @@ public partial class OverlayWindow : Window
     private void AnimateHand(TapEffect effect)
     {
         JabTranslation.BeginAnimation(TranslateTransform.YProperty, null);
+        DepthScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+        DepthScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
 
-        TimeSpan peak = TimeSpan.FromTicks((long)(effect.HandDuration.Ticks * 0.34));
-        DoubleAnimationUsingKeyFrames animation = new()
+        TimeSpan pullback = GetPullbackTime(effect);
+        TimeSpan impact = GetImpactTime(effect);
+        DoubleAnimationUsingKeyFrames translationAnimation = new()
         {
             Duration = new Duration(effect.HandDuration),
             FillBehavior = FillBehavior.Stop
         };
-        animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+        translationAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
             0,
             KeyTime.FromTimeSpan(TimeSpan.Zero)));
-        animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+        translationAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
             effect.HandTravel,
-            KeyTime.FromTimeSpan(peak),
-            new QuadraticEase { EasingMode = EasingMode.EaseIn }));
-        animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+            KeyTime.FromTimeSpan(pullback),
+            new CubicEase { EasingMode = EasingMode.EaseInOut }));
+        translationAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
+            -effect.ImpactOvershoot,
+            KeyTime.FromTimeSpan(impact),
+            new CubicEase { EasingMode = EasingMode.EaseIn }));
+        translationAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
             0,
             KeyTime.FromTimeSpan(effect.HandDuration),
             new BackEase
@@ -174,7 +183,36 @@ public partial class OverlayWindow : Window
                 Amplitude = 0.18,
                 EasingMode = EasingMode.EaseOut
             }));
-        JabTranslation.BeginAnimation(TranslateTransform.YProperty, animation);
+        JabTranslation.BeginAnimation(
+            TranslateTransform.YProperty,
+            translationAnimation);
+
+        DoubleAnimationUsingKeyFrames scaleAnimation = new()
+        {
+            Duration = new Duration(effect.HandDuration),
+            FillBehavior = FillBehavior.Stop
+        };
+        scaleAnimation.KeyFrames.Add(new LinearDoubleKeyFrame(
+            1,
+            KeyTime.FromTimeSpan(TimeSpan.Zero)));
+        scaleAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
+            effect.PullbackScale,
+            KeyTime.FromTimeSpan(pullback),
+            new CubicEase { EasingMode = EasingMode.EaseInOut }));
+        scaleAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
+            effect.ImpactScale,
+            KeyTime.FromTimeSpan(impact),
+            new CubicEase { EasingMode = EasingMode.EaseOut }));
+        scaleAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(
+            1,
+            KeyTime.FromTimeSpan(effect.HandDuration),
+            new BackEase
+            {
+                Amplitude = 0.12,
+                EasingMode = EasingMode.EaseOut
+            }));
+        DepthScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
+        DepthScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
     }
 
     private void AnimateFlash(
@@ -185,7 +223,8 @@ public partial class OverlayWindow : Window
         double size,
         double angle,
         double x,
-        double y)
+        double y,
+        TimeSpan beginTime)
     {
         flash.Data = (Geometry)FindResource($"PointerFlash{flashIndex}Geometry");
         flash.Width = size;
@@ -201,11 +240,13 @@ public partial class OverlayWindow : Window
         TimeSpan duration = TimeSpan.FromSeconds(0.15);
         DoubleAnimation opacity = new(1, 0, new Duration(duration))
         {
+            BeginTime = beginTime,
             FillBehavior = FillBehavior.Stop
         };
 
         DoubleAnimationUsingKeyFrames scaleAnimation = new()
         {
+            BeginTime = beginTime,
             Duration = new Duration(duration),
             FillBehavior = FillBehavior.Stop
         };
@@ -224,4 +265,14 @@ public partial class OverlayWindow : Window
         scale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
         scale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
     }
+
+    private static TimeSpan GetPullbackTime(TapEffect effect) =>
+        TimeSpan.FromMilliseconds(Math.Min(
+            110,
+            effect.HandDuration.TotalMilliseconds * 0.24));
+
+    private static TimeSpan GetImpactTime(TapEffect effect) =>
+        TimeSpan.FromMilliseconds(Math.Min(
+            180,
+            effect.HandDuration.TotalMilliseconds * 0.43));
 }
