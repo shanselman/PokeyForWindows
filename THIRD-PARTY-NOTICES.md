@@ -2,11 +2,11 @@
 
 ## Pokey
 
-Pokey for Windows is inspired by Pokey, created by **Mikhail Kosenkov**:
+Pokey for Windows is inspired by Pokey, created by **Mike Kosenkov**:
 <https://www.pokeyapp.com/>.
 
-Credit for the original Pokey concept, name, and artwork belongs to Mikhail
-Kosenkov. Mikhail has kindly granted permission to use the **Pokey** name for
+Credit for the original Pokey concept, name, and artwork belongs to Mike
+Kosenkov. Mike has kindly granted permission to use the **Pokey** name for
 this Windows port — thank you, Mikhail!
 
 The repository's MIT license applies to this project's code only and does not
