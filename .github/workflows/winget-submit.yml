@@ -1,0 +1,167 @@
+name: WinGet Submit
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to submit, for example v1.0.0
+        required: true
+        type: string
+    secrets:
+      WINGET_CREATE_GITHUB_TOKEN:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to submit, for example v1.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: winget-submit-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: windows-latest
+
+    env:
+      APP_NAME: PokeyForWindows
+      COMMAND_ALIAS: pokey
+      GH_TOKEN: ${{ github.token }}
+      PACKAGE_ID: Hanselman.PokeyForWindows
+      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+
+    steps:
+      - name: Resolve release
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.tag }}"
+
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+            throw "Release tag '$tag' must match vX.Y.Z exactly."
+          }
+
+          "TAG=$tag" >> $env:GITHUB_ENV
+          "VERSION=$($Matches.version)" >> $env:GITHUB_ENV
+          "RELEASE_URL=https://github.com/${{ github.repository }}/releases/tag/$tag" >> $env:GITHUB_ENV
+
+      - name: Download and hash release assets
+        shell: pwsh
+        run: |
+          $baseUrl = "https://github.com/${{ github.repository }}/releases/download/$env:TAG"
+          $assets = @(
+            @{ Name = "$env:APP_NAME-$env:TAG-win-x64.zip"; HashName = "X64_SHA256" },
+            @{ Name = "$env:APP_NAME-$env:TAG-win-arm64.zip"; HashName = "ARM64_SHA256" }
+          )
+
+          New-Item -ItemType Directory -Path ".winget-assets" -Force | Out-Null
+          foreach ($asset in $assets) {
+            $path = Join-Path ".winget-assets" $asset.Name
+            Invoke-WebRequest -Uri "$baseUrl/$($asset.Name)" -OutFile $path
+            if ((Get-Item $path).Length -le 0) {
+              throw "Downloaded asset '$($asset.Name)' is empty."
+            }
+            "$($asset.HashName)=$((Get-FileHash $path -Algorithm SHA256).Hash)" >> $env:GITHUB_ENV
+          }
+
+      - name: Create manifests
+        shell: pwsh
+        run: |
+          $manifestRoot = Join-Path "winget-manifest" "manifests\h\Hanselman\PokeyForWindows\$env:VERSION"
+          New-Item -ItemType Directory -Path $manifestRoot -Force | Out-Null
+
+          $release = gh release view $env:TAG --repo $env:GITHUB_REPOSITORY --json publishedAt | ConvertFrom-Json
+          $releaseDate = ([DateTime]$release.publishedAt).ToUniversalTime().ToString("yyyy-MM-dd")
+          $baseUrl = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG"
+          $x64Url = "$baseUrl/$env:APP_NAME-$env:TAG-win-x64.zip"
+          $arm64Url = "$baseUrl/$env:APP_NAME-$env:TAG-win-arm64.zip"
+
+          @"
+          # yaml-language-server: `$schema=https://aka.ms/winget-manifest.version.1.10.0.schema.json
+
+          PackageIdentifier: $env:PACKAGE_ID
+          PackageVersion: $env:VERSION
+          DefaultLocale: en-US
+          ManifestType: version
+          ManifestVersion: 1.10.0
+          "@ -replace "^[ ]{10}", "" | Set-Content (Join-Path $manifestRoot "$env:PACKAGE_ID.yaml") -Encoding utf8NoBOM
+
+          @"
+          # yaml-language-server: `$schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+
+          PackageIdentifier: $env:PACKAGE_ID
+          PackageVersion: $env:VERSION
+          PackageLocale: en-US
+          Publisher: Scott Hanselman
+          PublisherUrl: https://www.hanselman.com/
+          PublisherSupportUrl: https://github.com/$env:GITHUB_REPOSITORY/issues
+          Author: Scott Hanselman
+          PackageName: Pokey for Windows
+          PackageUrl: https://github.com/$env:GITHUB_REPOSITORY
+          License: MIT
+          LicenseUrl: https://github.com/$env:GITHUB_REPOSITORY/blob/main/LICENSE
+          Copyright: Copyright (c) 2026 Scott Hanselman
+          ShortDescription: A Pokey-style adaptive click-burst tray app for Windows.
+          Description: A free and open-source Windows tray app with a Ctrl+Alt+P hotkey, adaptive click bursts, and multi-monitor support.
+          Moniker: pokey
+          Tags:
+          - accessibility
+          - mouse
+          - productivity
+          - tray
+          - windows
+          ReleaseNotesUrl: $env:RELEASE_URL
+          ManifestType: defaultLocale
+          ManifestVersion: 1.10.0
+          "@ -replace "^[ ]{10}", "" | Set-Content (Join-Path $manifestRoot "$env:PACKAGE_ID.locale.en-US.yaml") -Encoding utf8NoBOM
+
+          @"
+          # yaml-language-server: `$schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+
+          PackageIdentifier: $env:PACKAGE_ID
+          PackageVersion: $env:VERSION
+          InstallerType: zip
+          NestedInstallerType: portable
+          UpgradeBehavior: uninstallPrevious
+          Commands:
+          - $env:COMMAND_ALIAS
+          Installers:
+          - Architecture: x64
+            NestedInstallerFiles:
+            - RelativeFilePath: PokeyForWindows.exe
+              PortableCommandAlias: $env:COMMAND_ALIAS
+            InstallerUrl: $x64Url
+            InstallerSha256: $env:X64_SHA256
+          - Architecture: arm64
+            NestedInstallerFiles:
+            - RelativeFilePath: PokeyForWindows.exe
+              PortableCommandAlias: $env:COMMAND_ALIAS
+            InstallerUrl: $arm64Url
+            InstallerSha256: $env:ARM64_SHA256
+          ManifestType: installer
+          ManifestVersion: 1.10.0
+          ReleaseDate: $releaseDate
+          "@ -replace "^[ ]{10}", "" | Set-Content (Join-Path $manifestRoot "$env:PACKAGE_ID.installer.yaml") -Encoding utf8NoBOM
+
+          "MANIFEST_ROOT=$manifestRoot" >> $env:GITHUB_ENV
+
+      - name: Download WingetCreate
+        shell: pwsh
+        run: Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+
+      - name: Submit manifests
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw "Set the WINGET_CREATE_GITHUB_TOKEN repository secret."
+          }
+
+          .\wingetcreate.exe submit `
+            --prtitle "New version: $env:PACKAGE_ID version $env:VERSION" `
+            --token $env:WINGET_CREATE_GITHUB_TOKEN `
+            --no-open `
+            $env:MANIFEST_ROOT

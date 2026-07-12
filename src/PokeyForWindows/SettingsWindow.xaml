@@ -1,0 +1,170 @@
+﻿<Window
+    x:Class="PokeyForWindows.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Pokey for Windows"
+    Width="520"
+    Height="620"
+    MinWidth="480"
+    MinHeight="560"
+    ResizeMode="CanMinimize"
+    ShowInTaskbar="False"
+    ThemeMode="System"
+    WindowStartupLocation="CenterScreen">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock
+                FontSize="28"
+                FontWeight="SemiBold"
+                Text="Pokey for Windows" />
+            <TextBlock
+                Margin="0,4,0,0"
+                Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                Text="Make the cursor impossible to miss." />
+        </StackPanel>
+
+        <Button
+            x:Name="ToggleButton"
+            Grid.Row="1"
+            Margin="0,20,0,20"
+            MinHeight="44"
+            AutomationProperties.AutomationId="TogglePokeyButton"
+            AutomationProperties.Name="Toggle Pokey pointer"
+            Click="ToggleButton_Click"
+            FontWeight="SemiBold" />
+
+        <ScrollViewer
+            Grid.Row="2"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="Pointer">
+                    <Grid Margin="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Appearance" />
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="0,8,0,16"
+                            Orientation="Horizontal">
+                            <RadioButton
+                                x:Name="LightPointerRadio"
+                                AutomationProperties.AutomationId="LightPointerRadio"
+                                Content="Light hand"
+                                GroupName="PointerTheme" />
+                            <RadioButton
+                                x:Name="DarkPointerRadio"
+                                Margin="20,0,0,0"
+                                AutomationProperties.AutomationId="DarkPointerRadio"
+                                Content="Dark hand"
+                                GroupName="PointerTheme" />
+                        </StackPanel>
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Stick length" />
+                            <Slider
+                                x:Name="PointerLengthSlider"
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                Minimum="160"
+                                Maximum="720"
+                                TickFrequency="40"
+                                IsSnapToTickEnabled="False"
+                                AutomationProperties.AutomationId="PointerLengthSlider"
+                                AutomationProperties.Name="Pointer stick length" />
+                        </Grid>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox
+                    Margin="0,16,0,0"
+                    Header="Behavior">
+                    <StackPanel Margin="12">
+                        <CheckBox
+                            x:Name="AnimateOnClickCheckBox"
+                            AutomationProperties.AutomationId="AnimateOnClickCheckBox"
+                            Content="Animate on click" />
+                        <CheckBox
+                            x:Name="StartWithWindowsCheckBox"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="StartWithWindowsCheckBox"
+                            Content="Start with Windows" />
+                        <CheckBox
+                            x:Name="AutoUpdateCheckBox"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="AutoUpdateCheckBox"
+                            Content="Automatically check for updates" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox
+                    Margin="0,16,0,0"
+                    Header="Shortcut">
+                    <Grid Margin="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Toggle the pointer" />
+                        <TextBlock
+                            Grid.Column="1"
+                            FontFamily="Consolas"
+                            FontWeight="SemiBold"
+                            Text="Ctrl+Alt+P" />
+                    </Grid>
+                </GroupBox>
+
+                <TextBlock
+                    Margin="0,16,0,0"
+                    TextWrapping="Wrap">
+                    Inspired by Pokey for macOS by Mikhail Kosenkov.
+                    <Hyperlink
+                        AutomationProperties.Name="Open Pokey website"
+                        NavigateUri="https://www.pokeyapp.com/"
+                        RequestNavigate="Hyperlink_RequestNavigate">pokeyapp.com</Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid
+            Grid.Row="3"
+            Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button
+                AutomationProperties.AutomationId="CheckForUpdatesButton"
+                Click="CheckForUpdatesButton_Click"
+                Content="Check for updates" />
+            <Button
+                Grid.Column="2"
+                MinWidth="88"
+                AutomationProperties.AutomationId="CancelSettingsButton"
+                Click="CancelButton_Click"
+                Content="Cancel" />
+            <Button
+                Grid.Column="3"
+                Margin="12,0,0,0"
+                MinWidth="88"
+                AutomationProperties.AutomationId="SaveSettingsButton"
+                Click="SaveButton_Click"
+                Content="Save"
+                IsDefault="True" />
+        </Grid>
+    </Grid>
+</Window>

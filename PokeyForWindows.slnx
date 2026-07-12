@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PokeyForWindows.InteropHarness/PokeyForWindows.InteropHarness.csproj" />
+    <Project Path="src/PokeyForWindows/PokeyForWindows.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,241 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      allow_unsigned:
+        description: Allow unsigned artifacts for a manual non-release test build
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ALLOW_UNSIGNED: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_unsigned }}
+  HAS_AZURE_SIGNING: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_CLIENT_SECRET != '' && secrets.AZURE_SUBSCRIPTION_ID != '' && secrets.AZURE_TENANT_ID != '' && vars.AZURE_TRUSTED_SIGNING_ENDPOINT != '' && vars.AZURE_TRUSTED_SIGNING_ACCOUNT != '' && vars.AZURE_CERTIFICATE_PROFILE_NAME != '' }}
+  TRUSTED_SIGNING_ENDPOINT: ${{ vars.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+  TRUSTED_SIGNING_ACCOUNT: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+  TRUSTED_SIGNING_PROFILE: ${{ vars.AZURE_CERTIFICATE_PROFILE_NAME }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Require Trusted Signing for tagged releases
+        if: github.ref_type == 'tag' && env.HAS_AZURE_SIGNING != 'true'
+        shell: pwsh
+        run: throw "Tagged releases require all Azure Trusted Signing secrets and variables."
+
+      - name: Require signing configuration
+        if: env.HAS_AZURE_SIGNING != 'true' && env.ALLOW_UNSIGNED != 'true'
+        shell: pwsh
+        run: throw "Configure Azure Trusted Signing, or explicitly allow an unsigned manual non-tag build."
+
+      - name: Set version from tag
+        shell: pwsh
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if ($env:REF_TYPE -eq "tag") {
+            if ($env:REF_NAME -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+              throw "Release tag '$env:REF_NAME' must match vX.Y.Z exactly."
+            }
+            $version = $Matches.version
+          } else {
+            $version = "0.0.0-ci.$env:RUN_NUMBER"
+          }
+
+          $numericVersion = ($version -split "-", 2)[0]
+          $parts = $numericVersion.Split(".")
+          $assemblyVersion = "$($parts[0]).$($parts[1]).$($parts[2]).0"
+
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
+
+      - name: Restore
+        run: dotnet restore PokeyForWindows.slnx
+
+      - name: Build
+        run: dotnet build PokeyForWindows.slnx --configuration Release --no-restore
+
+      - name: Run interop harness
+        run: dotnet run --project src\PokeyForWindows.InteropHarness\PokeyForWindows.InteropHarness.csproj --configuration Release --no-build -- 10000
+
+      - name: Publish x64
+        shell: pwsh
+        run: |
+          dotnet publish src\PokeyForWindows\PokeyForWindows.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:DebugType=None `
+            /p:DebugSymbols=false `
+            /p:Version=$env:VERSION `
+            /p:AssemblyVersion=$env:ASSEMBLY_VERSION `
+            /p:FileVersion=$env:ASSEMBLY_VERSION `
+            /p:AssemblyInformationalVersion=$env:VERSION
+
+      - name: Publish ARM64
+        shell: pwsh
+        run: |
+          dotnet publish src\PokeyForWindows\PokeyForWindows.csproj `
+            --configuration Release `
+            --runtime win-arm64 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:DebugType=None `
+            /p:DebugSymbols=false `
+            /p:Version=$env:VERSION `
+            /p:AssemblyVersion=$env:ASSEMBLY_VERSION `
+            /p:FileVersion=$env:ASSEMBLY_VERSION `
+            /p:AssemblyInformationalVersion=$env:VERSION
+
+      - name: Azure login
+        if: env.HAS_AZURE_SIGNING == 'true'
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Sign executables with Azure Trusted Signing
+        if: env.HAS_AZURE_SIGNING == 'true'
+        uses: azure/trusted-signing-action@db7a3a6bd3912025c705162fb7475389f5b69ec6 # v1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ env.TRUSTED_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ env.TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ env.TRUSTED_SIGNING_PROFILE }}
+          files: |
+            ${{ github.workspace }}\src\PokeyForWindows\bin\Release\net10.0-windows\win-x64\publish\PokeyForWindows.exe
+            ${{ github.workspace }}\src\PokeyForWindows\bin\Release\net10.0-windows\win-arm64\publish\PokeyForWindows.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Verify signatures
+        if: env.HAS_AZURE_SIGNING == 'true'
+        shell: pwsh
+        run: |
+          $files = @(
+            "src\PokeyForWindows\bin\Release\net10.0-windows\win-x64\publish\PokeyForWindows.exe",
+            "src\PokeyForWindows\bin\Release\net10.0-windows\win-arm64\publish\PokeyForWindows.exe"
+          )
+
+          foreach ($file in $files) {
+            $signature = Get-AuthenticodeSignature -FilePath $file
+            Write-Host "$file => $($signature.Status)"
+            if ($signature.Status -ne "Valid") {
+              throw "Signature verification failed for '$file'."
+            }
+          }
+
+      - name: Confirm unsigned build is non-release
+        if: env.HAS_AZURE_SIGNING != 'true'
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            throw "Unsigned tagged releases are forbidden."
+          }
+          Write-Host "Continuing with an explicitly requested unsigned test artifact."
+
+      - name: Prepare ZIP assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "artifacts" -Force | Out-Null
+
+          foreach ($rid in @("win-x64", "win-arm64")) {
+            $stage = "artifacts\stage-$rid"
+            New-Item -ItemType Directory -Path $stage -Force | Out-Null
+            Copy-Item "src\PokeyForWindows\bin\Release\net10.0-windows\$rid\publish\PokeyForWindows.exe" $stage
+            Copy-Item "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md" $stage
+
+            $asset = "artifacts\PokeyForWindows-v$env:VERSION-$rid.zip"
+            Compress-Archive -Path "$stage\*" -DestinationPath $asset
+            Remove-Item $stage -Recurse -Force
+          }
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: PokeyForWindows-${{ env.VERSION }}
+          path: artifacts\*.zip
+          if-no-files-found: error
+
+      - name: Create immutable-style GitHub Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $repository = "${{ github.repository }}"
+          $triggerSha = "${{ github.sha }}"
+
+          gh release view $tag --repo $repository *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Release '$tag' already exists. Refusing to mutate it."
+          }
+
+          $tagSha = (git rev-list -n 1 $tag).Trim()
+          if ([string]::IsNullOrWhiteSpace($tagSha) -or $tagSha -ne $triggerSha) {
+            throw "Tag '$tag' points to '$tagSha', not triggering commit '$triggerSha'."
+          }
+
+          @"
+          ## Pokey for Windows $tag
+
+          ### Downloads
+
+          | Asset | Platform |
+          |---|---|
+          | `PokeyForWindows-$tag-win-x64.zip` | Intel and AMD 64-bit Windows |
+          | `PokeyForWindows-$tag-win-arm64.zip` | ARM64 Windows |
+
+          Both assets contain a signed, self-contained single-file executable.
+          After the community manifest is accepted, install with
+          `winget install Hanselman.PokeyForWindows`.
+          "@ -replace "^[ ]{10}", "" | Set-Content release-notes.md -Encoding utf8NoBOM
+
+          gh release create $tag `
+            --repo $repository `
+            --verify-tag `
+            --generate-notes `
+            --notes-file release-notes.md `
+            artifacts\*.zip
+
+  winget-submit:
+    needs: build
+    if: github.ref_type == 'tag'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/winget-submit.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit
