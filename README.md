@@ -111,7 +111,9 @@ Configure these repository secrets:
 - `WINGET_CREATE_GITHUB_TOKEN` (a token permitted to submit to
   `microsoft\winget-pkgs`)
 
-Configure these repository variables:
+These repository variables are optional overrides. The workflow defaults to
+the same signing endpoint, account, and certificate profile as the other
+Hanselman Windows utilities:
 
 - `AZURE_TRUSTED_SIGNING_ENDPOINT`
 - `AZURE_TRUSTED_SIGNING_ACCOUNT`
