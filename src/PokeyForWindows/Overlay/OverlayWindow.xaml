@@ -37,11 +37,11 @@
 
             <Border
                 x:Name="PointerStick"
-                Canvas.Left="21"
+                Canvas.Left="20"
                 Canvas.Top="40"
-                Width="7"
+                Width="14"
                 Height="400"
-                CornerRadius="4" />
+                CornerRadius="7" />
 
             <Path
                 x:Name="PointerHand"
