@@ -1,5 +1,10 @@
 # Repository operations
 
+## Contribution workflow
+
+This is a hobby project. Direct commits to `main` are acceptable for routine
+changes after local validation; pull requests are optional.
+
 ## Validation
 
 Use the repository wrapper for local validation:
