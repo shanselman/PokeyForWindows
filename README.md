@@ -8,10 +8,11 @@ pointer across monitors and escalates its hand-drawn impact bursts as clicks
 arrive faster. The tray icon provides status and controls without keeping a
 window open.
 
-> [!IMPORTANT]
-> Reuse of the Pokey name and any Pokey-derived artwork is provisional pending
-> permission from Mikhail Kosenkov, creator of [Pokey](https://www.pokeyapp.com/).
-> See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+> [!NOTE]
+> With gratitude to **Mikhail Kosenkov**, creator of the original
+> [Pokey](https://www.pokeyapp.com/) for macOS, who kindly granted permission
+> to use the Pokey name for this Windows port. See
+> [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Download
 
