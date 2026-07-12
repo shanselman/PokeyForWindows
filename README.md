@@ -9,7 +9,7 @@ arrive faster. The tray icon provides status and controls without keeping a
 window open.
 
 > [!NOTE]
-> With gratitude to **Mike Kosenkov**, (Mike) Kosenkov**, creator of the
+> With gratitude to **Mike Kosenkov**, **, creator of the
 > original [Pokey](https://www.pokeyapp.com/) for macOS, who kindly granted permission
 > to use the Pokey name for this Windows port. See
 > [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
