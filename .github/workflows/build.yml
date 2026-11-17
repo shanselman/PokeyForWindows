@@ -42,13 +42,8 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Require Trusted Signing for tagged releases
-        if: github.ref_type == 'tag' && env.HAS_AZURE_SIGNING != 'true'
-        shell: pwsh
-        run: throw "Tagged releases require all Azure Trusted Signing secrets and variables."
-
       - name: Require signing configuration
-        if: env.HAS_AZURE_SIGNING != 'true' && env.ALLOW_UNSIGNED != 'true'
+        if: env.HAS_AZURE_SIGNING != 'true' && env.ALLOW_UNSIGNED != 'true' && github.ref_type != 'tag'
         shell: pwsh
         run: throw "Configure Azure Trusted Signing, or explicitly allow an unsigned manual non-tag build."
 
@@ -160,14 +155,11 @@ jobs:
             }
           }
 
-      - name: Confirm unsigned build is non-release
+      - name: Note unsigned build
         if: env.HAS_AZURE_SIGNING != 'true'
         shell: pwsh
         run: |
-          if ("${{ github.ref_type }}" -eq "tag") {
-            throw "Unsigned tagged releases are forbidden."
-          }
-          Write-Host "Continuing with an explicitly requested unsigned test artifact."
+          Write-Host "No Azure Trusted Signing configured: continuing with unsigned artifacts."
 
       - name: Prepare ZIP assets
         shell: pwsh
@@ -222,7 +214,7 @@ jobs:
           | `PokeyForWindows-$tag-win-x64.zip` | Intel and AMD 64-bit Windows |
           | `PokeyForWindows-$tag-win-arm64.zip` | ARM64 Windows |
 
-          Both assets contain a signed, self-contained single-file executable.
+          Both assets contain a self-contained single-file executable. Builds are signed only when Azure Trusted Signing is configured; otherwise Windows SmartScreen may warn.
           "@ -replace "^[ ]{10}", "" | Set-Content release-notes.md -Encoding utf8NoBOM
 
           gh release create $tag `

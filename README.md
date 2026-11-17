@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+> **Fork changes:** The release workflow now also publishes unsigned tagged
+> releases when Azure Trusted Signing is not configured, so every release
+> includes ready-to-run `PokeyForWindows.exe` ZIPs (x64 and ARM64).
+> Windows SmartScreen may warn about unsigned builds.
+
 # Pokey for Windows
 
 Pokey for Windows is a free and open-source .NET 10 WPF tray app intended to
