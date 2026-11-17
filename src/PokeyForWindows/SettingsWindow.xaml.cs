@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
@@ -34,6 +34,14 @@ public partial class SettingsWindow : Window
         StartWithWindowsCheckBox.IsChecked = _settings.StartWithWindows;
         AutoUpdateCheckBox.IsChecked = _settings.AutoCheckForUpdates;
         ShowButtonCheckBox.IsChecked = _settings.ShowButton;
+        PinchAtEdgesCheckBox.IsChecked = _settings.PinchAtEdges;
+    }
+
+    /// <summary>Shows the window as a minimized taskbar button so the app can be pinned.</summary>
+    internal void ShowInTaskbarMinimized()
+    {
+        WindowState = WindowState.Minimized;
+        Show();
     }
 
     internal void CloseForExit()
@@ -58,14 +66,15 @@ public partial class SettingsWindow : Window
         _settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked == true;
         _settings.AutoCheckForUpdates = AutoUpdateCheckBox.IsChecked == true;
         _settings.ShowButton = ShowButtonCheckBox.IsChecked == true;
+        _settings.PinchAtEdges = PinchAtEdgesCheckBox.IsChecked == true;
         SettingsChanged?.Invoke();
-        Hide();
+        WindowState = WindowState.Minimized;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshControls();
-        Hide();
+        WindowState = WindowState.Minimized;
     }
 
     private void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e) =>
@@ -90,6 +99,6 @@ public partial class SettingsWindow : Window
         }
 
         e.Cancel = true;
-        Hide();
+        WindowState = WindowState.Minimized;
     }
 }

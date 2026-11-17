@@ -10,6 +10,11 @@
 > - The in-app updater now checks the releases of this fork. Fork builds are
 >   unsigned, so the signature check is skipped; downloads are still limited to
 >   HTTPS URLs of this repository's releases.
+>
+> - The hand **pinches and turns orange** when Windows would show a resize or move
+>   cursor (window edges, splitters), so draggable things are easy to spot.
+>   Can be turned off in the settings.
+> - Pokey now shows up in the **taskbar** while it runs, so it can be pinned.
 
 # Pokey for Windows
 

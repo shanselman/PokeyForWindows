@@ -8,7 +8,7 @@
     MinWidth="480"
     MinHeight="560"
     ResizeMode="CanMinimize"
-    ShowInTaskbar="False"
+    ShowInTaskbar="True"
     ThemeMode="System"
     WindowStartupLocation="CenterScreen">
     <Grid Margin="24">
@@ -111,6 +111,11 @@
                             Margin="0,12,0,0"
                             AutomationProperties.AutomationId="ShowButtonCheckBox"
                             Content="Show Pokey button (bottom left)" />
+                        <CheckBox
+                            x:Name="PinchAtEdgesCheckBox"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="PinchAtEdgesCheckBox"
+                            Content="Pinch the hand at draggable edges" />
                     </StackPanel>
                 </GroupBox>
 

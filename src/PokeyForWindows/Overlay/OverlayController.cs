@@ -9,6 +9,8 @@ internal sealed class OverlayController : IDisposable
     private AppSettings _settings;
     private bool _running;
 
+    internal Func<bool>? GrabCursorProbe { get; set; }
+
     internal OverlayController(AppSettings settings)
     {
         _settings = settings;
@@ -108,9 +110,11 @@ internal sealed class OverlayController : IDisposable
             return;
         }
 
+        bool pinched = _settings.PinchAtEdges && GrabCursorProbe?.Invoke() == true;
         foreach (OverlayWindow window in _windows)
         {
             window.UpdatePointer(point, visible: true);
+            window.SetPinched(pinched);
         }
     }
 }

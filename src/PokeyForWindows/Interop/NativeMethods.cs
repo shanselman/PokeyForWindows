@@ -44,6 +44,19 @@ internal static class NativeMethods
         internal UIntPtr ExtraInfo;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CursorInfo
+    {
+        internal int Size;
+        internal int Flags;
+        internal IntPtr Cursor;
+        internal Point ScreenPosition;
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetCursorInfo(ref CursorInfo info);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetCursorPos(out Point point);

@@ -47,6 +47,7 @@
                 x:Name="PointerHand"
                 Width="48"
                 Height="49"
+                RenderTransformOrigin="0.4,0.3"
                 Data="{StaticResource PointerHandGeometry}"
                 Fill="White"
                 Stretch="Uniform"
@@ -54,7 +55,11 @@
                 StrokeLineJoin="Round"
                 StrokeStartLineCap="Round"
                 StrokeEndLineCap="Round"
-                StrokeThickness="1.8" />
+                StrokeThickness="1.8">
+                <Path.RenderTransform>
+                    <ScaleTransform x:Name="PinchScale" ScaleX="1" ScaleY="1" />
+                </Path.RenderTransform>
+            </Path>
         </Canvas>
 
         <Path

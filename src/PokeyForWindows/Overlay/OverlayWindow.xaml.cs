@@ -21,6 +21,8 @@ public partial class OverlayWindow : Window
     private readonly Screen _screen;
     private AppSettings _settings;
     private IntPtr _windowHandle;
+    private bool _pinched;
+    private Brush _handFill = Brushes.White;
 
     internal OverlayWindow(Screen screen, AppSettings settings)
     {
@@ -66,7 +68,8 @@ public partial class OverlayWindow : Window
             handFill.Freeze();
         }
 
-        PointerHand.Fill = handFill;
+        _handFill = handFill;
+        PointerHand.Fill = _pinched ? PinchBrush : handFill;
         PointerHand.Stroke = contrasting;
         PrimaryFlash.Fill = contrasting;
         SecondaryFlash.Fill = contrasting;
@@ -83,6 +86,35 @@ public partial class OverlayWindow : Window
         stickBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, stickColor.R, stickColor.G, stickColor.B), 1));
         stickBrush.Freeze();
         PointerStick.Background = stickBrush;
+    }
+
+    private static readonly Brush PinchBrush = CreatePinchBrush();
+
+    private static Brush CreatePinchBrush()
+    {
+        SolidColorBrush brush = new(Color.FromRgb(255, 176, 32));
+        brush.Freeze();
+        return brush;
+    }
+
+    /// <summary>Squeezes the hand like a pinch while a resize/move cursor would show.</summary>
+    internal void SetPinched(bool pinched)
+    {
+        if (pinched == _pinched)
+        {
+            return;
+        }
+
+        _pinched = pinched;
+        PointerHand.Fill = pinched ? PinchBrush : _handFill;
+        Duration duration = new(TimeSpan.FromMilliseconds(110));
+        IEasingFunction ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        PinchScale.BeginAnimation(
+            ScaleTransform.ScaleXProperty,
+            new DoubleAnimation(pinched ? 0.58 : 1, duration) { EasingFunction = ease });
+        PinchScale.BeginAnimation(
+            ScaleTransform.ScaleYProperty,
+            new DoubleAnimation(pinched ? 0.86 : 1, duration) { EasingFunction = ease });
     }
 
     internal void Trigger(TapEffect effect, NativeMethods.Point point)

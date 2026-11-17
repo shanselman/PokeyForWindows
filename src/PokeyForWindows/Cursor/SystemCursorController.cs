@@ -30,6 +30,18 @@ internal sealed class SystemCursorController : IDisposable
         32672  // Person
     ];
 
+    // Resize and move cursors: the hand pinches while one of these would be shown.
+    private static readonly uint[] GrabCursorIds =
+    [
+        32640, // Size
+        32642, // NW/SE
+        32643, // NE/SW
+        32644, // W/E
+        32645, // N/S
+        32646  // Move
+    ];
+
+    private readonly HashSet<IntPtr> _grabHandles = [];
     private EventWaitHandle? _watchdogStopEvent;
     private Process? _watchdogProcess;
     private bool _hidden;
@@ -96,6 +108,18 @@ internal sealed class SystemCursorController : IDisposable
                 }
             }
 
+            _grabHandles.Clear();
+            foreach (uint cursorId in GrabCursorIds)
+            {
+                IntPtr handle = NativeMethods.LoadCursor(
+                    IntPtr.Zero,
+                    new IntPtr(unchecked((int)cursorId)));
+                if (handle != IntPtr.Zero)
+                {
+                    _grabHandles.Add(handle);
+                }
+            }
+
             _hidden = true;
         }
         catch
@@ -105,8 +129,24 @@ internal sealed class SystemCursorController : IDisposable
         }
     }
 
+    /// <summary>True while Windows is showing a resize or move cursor.</summary>
+    internal bool IsGrabCursorActive()
+    {
+        if (!_hidden || _grabHandles.Count == 0)
+        {
+            return false;
+        }
+
+        NativeMethods.CursorInfo info = new()
+        {
+            Size = System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.CursorInfo>()
+        };
+        return NativeMethods.GetCursorInfo(ref info) && _grabHandles.Contains(info.Cursor);
+    }
+
     internal void Restore()
     {
+        _grabHandles.Clear();
         _watchdogStopEvent?.Set();
         _watchdogStopEvent?.Dispose();
         _watchdogStopEvent = null;

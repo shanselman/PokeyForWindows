@@ -29,6 +29,7 @@ internal sealed class AppController : IDisposable
         _settings = _settingsStore.Load();
         _overlays = new OverlayController(_settings);
         _mouseHook = new MouseHook(System.Windows.Application.Current.Dispatcher);
+        _overlays.GrabCursorProbe = _systemCursor.IsGrabCursorActive;
         _tray = new TrayIconController(_settings);
         _settingsWindow = new SettingsWindow(_settings);
         _updater = new AppUpdater(
@@ -67,6 +68,11 @@ internal sealed class AppController : IDisposable
         }
 
         ApplyButtonVisibility();
+
+        if (!_settingsWindow.IsVisible)
+        {
+            _settingsWindow.ShowInTaskbarMinimized();
+        }
 
         if (_settingsStore.RecoveryNotice is not null)
         {
@@ -287,6 +293,11 @@ internal sealed class AppController : IDisposable
         if (!_settingsWindow.IsVisible)
         {
             _settingsWindow.Show();
+        }
+
+        if (_settingsWindow.WindowState == WindowState.Minimized)
+        {
+            _settingsWindow.WindowState = WindowState.Normal;
         }
 
         _settingsWindow.Activate();
