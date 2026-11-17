@@ -14,6 +14,10 @@ public partial class SettingsWindow : Window
     {
         _settings = settings;
         InitializeComponent();
+        Version version = AppUpdater.GetCurrentVersion();
+        VersionText.Text = version.Major == 0 && version.Minor == 0 && version.Build <= 0
+            ? "Version: development build"
+            : $"Version {version.Major}.{version.Minor}.{version.Build}";
         Closing += OnClosing;
         RefreshControls();
     }

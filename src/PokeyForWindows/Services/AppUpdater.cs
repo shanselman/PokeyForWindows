@@ -134,6 +134,7 @@ internal sealed class AppUpdater : IDisposable
         string newPath = executablePath + ".new.exe";
         TryDelete(oldPath);
         TryDelete(newPath);
+        UpdateRecoveryWatchdog.CleanupStaleCopies();
     }
 
     public void Dispose()

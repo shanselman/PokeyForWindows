@@ -28,6 +28,11 @@
                 Margin="0,4,0,0"
                 Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                 Text="Make the cursor impossible to miss." />
+            <TextBlock
+                x:Name="VersionText"
+                Margin="0,2,0,0"
+                AutomationProperties.AutomationId="VersionText"
+                Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
         </StackPanel>
 
         <Button
