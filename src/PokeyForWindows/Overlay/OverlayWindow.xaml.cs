@@ -69,7 +69,10 @@ public partial class OverlayWindow : Window
         }
 
         _handFill = handFill;
-        PointerHand.Fill = _pinched ? PinchBrush : handFill;
+        PointerHand.Fill = handFill;
+        PointerHandPinchedBody.Fill = PinchBrush;
+        PointerHandPinchedLines.Fill = contrasting;
+        PointerHandPinchedLines.Stroke = contrasting;
         PointerHand.Stroke = contrasting;
         PrimaryFlash.Fill = contrasting;
         SecondaryFlash.Fill = contrasting;
@@ -97,7 +100,7 @@ public partial class OverlayWindow : Window
         return brush;
     }
 
-    /// <summary>Squeezes the hand like a pinch while a resize/move cursor would show.</summary>
+    /// <summary>Swaps to the pinched hand drawing while a resize/move cursor would show.</summary>
     internal void SetPinched(bool pinched)
     {
         if (pinched == _pinched)
@@ -106,15 +109,9 @@ public partial class OverlayWindow : Window
         }
 
         _pinched = pinched;
-        PointerHand.Fill = pinched ? PinchBrush : _handFill;
-        Duration duration = new(TimeSpan.FromMilliseconds(110));
-        IEasingFunction ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        PinchScale.BeginAnimation(
-            ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(pinched ? 0.58 : 1, duration) { EasingFunction = ease });
-        PinchScale.BeginAnimation(
-            ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(pinched ? 0.86 : 1, duration) { EasingFunction = ease });
+        PointerHand.Visibility = pinched ? Visibility.Collapsed : Visibility.Visible;
+        PointerHandPinchedBody.Visibility = pinched ? Visibility.Visible : Visibility.Collapsed;
+        PointerHandPinchedLines.Visibility = pinched ? Visibility.Visible : Visibility.Collapsed;
     }
 
     internal void Trigger(TapEffect effect, NativeMethods.Point point)

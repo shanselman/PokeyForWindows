@@ -11,7 +11,7 @@
 >   unsigned, so the signature check is skipped; downloads are still limited to
 >   HTTPS URLs of this repository's releases.
 >
-> - The hand **pinches and turns orange** when Windows would show a resize or move
+> - The hand **pinches (own drawing, see `design/`) and turns orange** when Windows would show a resize or move
 >   cursor (window edges, splitters), so draggable things are easy to spot.
 >   Can be turned off in the settings.
 > - Pokey now shows up in the **taskbar** while it runs, so it can be pinned.
