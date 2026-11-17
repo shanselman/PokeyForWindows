@@ -23,7 +23,11 @@
 Pokey for Windows is a free and open-source .NET 10 WPF tray app intended to
 bring Pokey-style cursor movement to Windows.
 
-Original Version: https://pokeyapp.com/
+> [!TIP]
+> **Love for the original.** Pokey was created by **Mike Kosenkov** and is a wonderful
+> macOS app. I love it and use it myself every day on my Mac. I also work on Windows,
+> and that is why this port exists. If you are on a Mac, please get the original:
+> **[pokeyapp.com](https://pokeyapp.com/)**.
 
 Press **Ctrl+Alt+P** to start or stop it. While active, the app follows the
 pointer across monitors and escalates its hand-drawn impact bursts as clicks
@@ -31,14 +35,14 @@ arrive faster. The tray icon provides status and controls without keeping a
 window open.
 
 > [!NOTE]
-> With gratitude to **Mike Kosenkov**, **, creator of the
+> With gratitude to **Mike Kosenkov**, creator of the
 > original [Pokey](https://www.pokeyapp.com/) for macOS, who kindly granted permission
 > to use the Pokey name for this Windows port. See
 > [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Download
 
-Download the latest signed release from
+Download the latest release from
 [GitHub Releases](https://github.com/digital-workshop/pokeyforwindows/releases/latest).
 
 | Asset | Windows platform |
