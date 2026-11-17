@@ -125,6 +125,7 @@ internal sealed class AppController : IDisposable
         _button.SettingsRequested += ShowSettings;
         _settingsWindow.SettingsChanged += ApplySettings;
         _settingsWindow.UpdateRequested += CheckForUpdates;
+        _settingsWindow.ExitRequested += Exit;
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
         SystemEvents.SessionSwitch += OnSessionSwitch;
     }

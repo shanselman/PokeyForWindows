@@ -162,10 +162,19 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Button
-                AutomationProperties.AutomationId="CheckForUpdatesButton"
-                Click="CheckForUpdatesButton_Click"
-                Content="Check for updates" />
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    AutomationProperties.AutomationId="CheckForUpdatesButton"
+                    Click="CheckForUpdatesButton_Click"
+                    Content="Check for updates" />
+                <Button
+                    Margin="12,0,0,0"
+                    MinWidth="72"
+                    AutomationProperties.AutomationId="ExitPokeyButton"
+                    AutomationProperties.Name="Exit Pokey"
+                    Click="ExitButton_Click"
+                    Content="Exit" />
+            </StackPanel>
             <Button
                 Grid.Column="2"
                 MinWidth="88"

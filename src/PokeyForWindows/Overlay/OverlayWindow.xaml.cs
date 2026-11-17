@@ -18,6 +18,11 @@ public partial class OverlayWindow : Window
     private const double PointerAnchorX = 18;
     private const double PointerAnchorY = 2;
 
+    // Where the fingertips meet in the pinched hand drawing (hand-local DIPs).
+    // While pinched, this point sits exactly on the mouse position.
+    private const double PinchPointX = 8;
+    private const double PinchPointY = 15;
+
     private readonly Screen _screen;
     private AppSettings _settings;
     private IntPtr _windowHandle;
@@ -49,8 +54,21 @@ public partial class OverlayWindow : Window
         double localX = (point.X - _screen.Bounds.Left) / dpi.DpiScaleX;
         double localY = (point.Y - _screen.Bounds.Top) / dpi.DpiScaleY;
 
-        Canvas.SetLeft(PointerRoot, localX - PointerAnchorX);
-        Canvas.SetTop(PointerRoot, localY - PointerAnchorY);
+        double pivotX = PointerAnchorX;
+        double pivotY = PointerAnchorY;
+        if (_pinched)
+        {
+            // The root rotates around the anchor, so rotate the pinch point the same way.
+            Matrix rotation = Matrix.Identity;
+            rotation.Rotate(PointerRotation.Angle);
+            Vector offset = rotation.Transform(
+                new Vector(PinchPointX - PointerAnchorX, PinchPointY - PointerAnchorY));
+            pivotX = PointerAnchorX + offset.X;
+            pivotY = PointerAnchorY + offset.Y;
+        }
+
+        Canvas.SetLeft(PointerRoot, localX - pivotX);
+        Canvas.SetTop(PointerRoot, localY - pivotY);
         PointerRoot.Visibility = Visibility.Visible;
     }
 

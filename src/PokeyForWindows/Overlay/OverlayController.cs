@@ -113,8 +113,8 @@ internal sealed class OverlayController : IDisposable
         bool pinched = _settings.PinchAtEdges && GrabCursorProbe?.Invoke() == true;
         foreach (OverlayWindow window in _windows)
         {
-            window.UpdatePointer(point, visible: true);
             window.SetPinched(pinched);
+            window.UpdatePointer(point, visible: true);
         }
     }
 }

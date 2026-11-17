@@ -25,6 +25,7 @@ public partial class SettingsWindow : Window
     internal event Action? ToggleRequested;
     internal event Action? SettingsChanged;
     internal event Action? UpdateRequested;
+    internal event Action? ExitRequested;
 
     internal void RefreshControls()
     {
@@ -80,6 +81,9 @@ public partial class SettingsWindow : Window
         RefreshControls();
         WindowState = WindowState.Minimized;
     }
+
+    private void ExitButton_Click(object sender, RoutedEventArgs e) =>
+        ExitRequested?.Invoke();
 
     private void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e) =>
         UpdateRequested?.Invoke();
