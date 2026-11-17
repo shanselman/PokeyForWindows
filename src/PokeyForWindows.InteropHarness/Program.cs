@@ -235,7 +235,7 @@ static void CorruptSettingsAreQuarantined()
 static void ReleaseUrlsAreRestricted()
 {
     AppUpdater.ValidateDownloadUrl(
-        "https://github.com/shanselman/pokeyforwindows/releases/download/v1.0.0/" +
+        "https://github.com/digital-workshop/pokeyforwindows/releases/download/v1.0.0/" +
         "PokeyForWindows-v1.0.0-win-x64.zip");
 
     AssertThrows<InvalidDataException>(

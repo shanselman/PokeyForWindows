@@ -55,6 +55,27 @@
                 StrokeStartLineCap="Round"
                 StrokeEndLineCap="Round"
                 StrokeThickness="1.8" />
+
+            <Path
+                x:Name="PointerHandPinchedBody"
+                Width="48"
+                Height="49"
+                Data="{StaticResource PointerHandPinchedBodyGeometry}"
+                Fill="White"
+                Stretch="Uniform"
+                Visibility="Collapsed" />
+
+            <Path
+                x:Name="PointerHandPinchedLines"
+                Width="48"
+                Height="49"
+                Data="{StaticResource PointerHandPinchedLinesGeometry}"
+                Fill="Black"
+                Stretch="Uniform"
+                Stroke="Black"
+                StrokeLineJoin="Round"
+                StrokeThickness="1.8"
+                Visibility="Collapsed" />
         </Canvas>
 
         <Path

@@ -8,7 +8,7 @@
     MinWidth="480"
     MinHeight="560"
     ResizeMode="CanMinimize"
-    ShowInTaskbar="False"
+    ShowInTaskbar="True"
     ThemeMode="System"
     WindowStartupLocation="CenterScreen">
     <Grid Margin="24">
@@ -28,6 +28,11 @@
                 Margin="0,4,0,0"
                 Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                 Text="Make the cursor impossible to miss." />
+            <TextBlock
+                x:Name="VersionText"
+                Margin="0,2,0,0"
+                AutomationProperties.AutomationId="VersionText"
+                Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
         </StackPanel>
 
         <Button
@@ -106,6 +111,16 @@
                             Margin="0,12,0,0"
                             AutomationProperties.AutomationId="AutoUpdateCheckBox"
                             Content="Automatically check for updates" />
+                        <CheckBox
+                            x:Name="ShowButtonCheckBox"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="ShowButtonCheckBox"
+                            Content="Show Pokey button (bottom left)" />
+                        <CheckBox
+                            x:Name="PinchAtEdgesCheckBox"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="PinchAtEdgesCheckBox"
+                            Content="Pinch the hand at draggable edges" />
                     </StackPanel>
                 </GroupBox>
 
@@ -147,10 +162,19 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Button
-                AutomationProperties.AutomationId="CheckForUpdatesButton"
-                Click="CheckForUpdatesButton_Click"
-                Content="Check for updates" />
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    AutomationProperties.AutomationId="CheckForUpdatesButton"
+                    Click="CheckForUpdatesButton_Click"
+                    Content="Check for updates" />
+                <Button
+                    Margin="12,0,0,0"
+                    MinWidth="72"
+                    AutomationProperties.AutomationId="ExitPokeyButton"
+                    AutomationProperties.Name="Exit Pokey"
+                    Click="ExitButton_Click"
+                    Content="Exit" />
+            </StackPanel>
             <Button
                 Grid.Column="2"
                 MinWidth="88"

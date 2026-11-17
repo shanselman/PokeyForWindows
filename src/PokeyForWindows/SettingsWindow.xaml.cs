@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
@@ -14,6 +14,10 @@ public partial class SettingsWindow : Window
     {
         _settings = settings;
         InitializeComponent();
+        Version version = AppUpdater.GetCurrentVersion();
+        VersionText.Text = version.Major == 0 && version.Minor == 0 && version.Build <= 0
+            ? "Version: development build"
+            : $"Version {version.Major}.{version.Minor}.{version.Build}";
         Closing += OnClosing;
         RefreshControls();
     }
@@ -21,6 +25,7 @@ public partial class SettingsWindow : Window
     internal event Action? ToggleRequested;
     internal event Action? SettingsChanged;
     internal event Action? UpdateRequested;
+    internal event Action? ExitRequested;
 
     internal void RefreshControls()
     {
@@ -33,6 +38,15 @@ public partial class SettingsWindow : Window
         AnimateOnClickCheckBox.IsChecked = _settings.AnimateOnClick;
         StartWithWindowsCheckBox.IsChecked = _settings.StartWithWindows;
         AutoUpdateCheckBox.IsChecked = _settings.AutoCheckForUpdates;
+        ShowButtonCheckBox.IsChecked = _settings.ShowButton;
+        PinchAtEdgesCheckBox.IsChecked = _settings.PinchAtEdges;
+    }
+
+    /// <summary>Shows the window as a minimized taskbar button so the app can be pinned.</summary>
+    internal void ShowInTaskbarMinimized()
+    {
+        WindowState = WindowState.Minimized;
+        Show();
     }
 
     internal void CloseForExit()
@@ -56,15 +70,20 @@ public partial class SettingsWindow : Window
         _settings.AnimateOnClick = AnimateOnClickCheckBox.IsChecked == true;
         _settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked == true;
         _settings.AutoCheckForUpdates = AutoUpdateCheckBox.IsChecked == true;
+        _settings.ShowButton = ShowButtonCheckBox.IsChecked == true;
+        _settings.PinchAtEdges = PinchAtEdgesCheckBox.IsChecked == true;
         SettingsChanged?.Invoke();
-        Hide();
+        WindowState = WindowState.Minimized;
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshControls();
-        Hide();
+        WindowState = WindowState.Minimized;
     }
+
+    private void ExitButton_Click(object sender, RoutedEventArgs e) =>
+        ExitRequested?.Invoke();
 
     private void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e) =>
         UpdateRequested?.Invoke();
@@ -88,6 +107,6 @@ public partial class SettingsWindow : Window
         }
 
         e.Cancel = true;
-        Hide();
+        WindowState = WindowState.Minimized;
     }
 }

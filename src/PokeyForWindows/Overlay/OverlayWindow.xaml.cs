@@ -18,9 +18,16 @@ public partial class OverlayWindow : Window
     private const double PointerAnchorX = 18;
     private const double PointerAnchorY = 2;
 
+    // Where the fingertips meet in the pinched hand drawing (hand-local DIPs).
+    // While pinched, this point sits exactly on the mouse position.
+    private const double PinchPointX = 8;
+    private const double PinchPointY = 15;
+
     private readonly Screen _screen;
     private AppSettings _settings;
     private IntPtr _windowHandle;
+    private bool _pinched;
+    private Brush _handFill = Brushes.White;
 
     internal OverlayWindow(Screen screen, AppSettings settings)
     {
@@ -47,8 +54,21 @@ public partial class OverlayWindow : Window
         double localX = (point.X - _screen.Bounds.Left) / dpi.DpiScaleX;
         double localY = (point.Y - _screen.Bounds.Top) / dpi.DpiScaleY;
 
-        Canvas.SetLeft(PointerRoot, localX - PointerAnchorX);
-        Canvas.SetTop(PointerRoot, localY - PointerAnchorY);
+        double pivotX = PointerAnchorX;
+        double pivotY = PointerAnchorY;
+        if (_pinched)
+        {
+            // The root rotates around the anchor, so rotate the pinch point the same way.
+            Matrix rotation = Matrix.Identity;
+            rotation.Rotate(PointerRotation.Angle);
+            Vector offset = rotation.Transform(
+                new Vector(PinchPointX - PointerAnchorX, PinchPointY - PointerAnchorY));
+            pivotX = PointerAnchorX + offset.X;
+            pivotY = PointerAnchorY + offset.Y;
+        }
+
+        Canvas.SetLeft(PointerRoot, localX - pivotX);
+        Canvas.SetTop(PointerRoot, localY - pivotY);
         PointerRoot.Visibility = Visibility.Visible;
     }
 
@@ -66,7 +86,11 @@ public partial class OverlayWindow : Window
             handFill.Freeze();
         }
 
+        _handFill = handFill;
         PointerHand.Fill = handFill;
+        PointerHandPinchedBody.Fill = handFill;
+        PointerHandPinchedLines.Fill = contrasting;
+        PointerHandPinchedLines.Stroke = contrasting;
         PointerHand.Stroke = contrasting;
         PrimaryFlash.Fill = contrasting;
         SecondaryFlash.Fill = contrasting;
@@ -83,6 +107,20 @@ public partial class OverlayWindow : Window
         stickBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, stickColor.R, stickColor.G, stickColor.B), 1));
         stickBrush.Freeze();
         PointerStick.Background = stickBrush;
+    }
+
+    /// <summary>Swaps to the pinched hand drawing while a resize/move cursor would show.</summary>
+    internal void SetPinched(bool pinched)
+    {
+        if (pinched == _pinched)
+        {
+            return;
+        }
+
+        _pinched = pinched;
+        PointerHand.Visibility = pinched ? Visibility.Collapsed : Visibility.Visible;
+        PointerHandPinchedBody.Visibility = pinched ? Visibility.Visible : Visibility.Collapsed;
+        PointerHandPinchedLines.Visibility = pinched ? Visibility.Visible : Visibility.Collapsed;
     }
 
     internal void Trigger(TapEffect effect, NativeMethods.Point point)

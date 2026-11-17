@@ -16,10 +16,11 @@ namespace PokeyForWindows;
 internal sealed class AppUpdater : IDisposable
 {
     private const string LatestReleaseApiUrl =
-        "https://api.github.com/repos/shanselman/pokeyforwindows/releases/latest";
+        "https://api.github.com/repos/digital-workshop/pokeyforwindows/releases/latest";
     private const string ExpectedDownloadPrefix =
-        "https://github.com/shanselman/pokeyforwindows/";
+        "https://github.com/digital-workshop/pokeyforwindows/";
     private const string ExpectedSignerSubstring = "Hanselman";
+    private const bool RequireSignedUpdates = false;
     private const long MaximumDownloadBytes = 150L * 1024 * 1024;
 
     private readonly HttpClient _httpClient;
@@ -133,6 +134,7 @@ internal sealed class AppUpdater : IDisposable
         string newPath = executablePath + ".new.exe";
         TryDelete(oldPath);
         TryDelete(newPath);
+        UpdateRecoveryWatchdog.CleanupStaleCopies();
     }
 
     public void Dispose()
@@ -203,7 +205,13 @@ internal sealed class AppUpdater : IDisposable
         {
             await DownloadAsync(release.DownloadUrl, temporaryZip, cancellationToken);
             ExtractExecutable(temporaryZip, newExecutablePath);
-            AuthenticodeVerifier.Verify(newExecutablePath, ExpectedSignerSubstring);
+            // Fork builds are unsigned: trust is limited to HTTPS downloads from the
+            // fork's own GitHub releases (see ExpectedDownloadPrefix).
+            if (RequireSignedUpdates)
+            {
+                AuthenticodeVerifier.Verify(newExecutablePath, ExpectedSignerSubstring);
+            }
+
             EnsureDirectoryWritable(executablePath);
 
             _beforeRestart();

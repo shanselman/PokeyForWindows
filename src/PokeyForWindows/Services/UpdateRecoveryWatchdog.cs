@@ -6,6 +6,32 @@ namespace PokeyForWindows;
 internal static class UpdateRecoveryWatchdog
 {
     private const string WatchdogArgument = "--update-watchdog";
+    private const string WatchdogFilePrefix = "PokeyForWindows-watchdog-";
+
+    /// <summary>Removes watchdog copies left in the temp folder by earlier updates.</summary>
+    internal static void CleanupStaleCopies()
+    {
+        try
+        {
+            foreach (string file in Directory.EnumerateFiles(
+                         Path.GetTempPath(),
+                         WatchdogFilePrefix + "*.exe"))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Still running or locked: leave it for the next start.
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            AppDiagnostics.Info("Could not clean stale update watchdog copies: " + ex.Message);
+        }
+    }
 
     internal static bool IsWatchdogInvocation(string[] arguments) =>
         arguments.Length == 4 &&
@@ -60,7 +86,14 @@ internal static class UpdateRecoveryWatchdog
         string executablePath,
         string backupPath)
     {
-        ProcessStartInfo startInfo = new(executablePath)
+        // Run the watchdog from a temporary copy: the real executable is renamed while
+        // the update is installed, which breaks a single-file host that is still starting.
+        string watchdogPath = Path.Combine(
+            Path.GetTempPath(),
+            $"{WatchdogFilePrefix}{Guid.NewGuid():N}.exe");
+        File.Copy(executablePath, watchdogPath, overwrite: false);
+
+        ProcessStartInfo startInfo = new(watchdogPath)
         {
             UseShellExecute = false,
             CreateNoWindow = true
