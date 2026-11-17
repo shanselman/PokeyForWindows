@@ -70,7 +70,7 @@ public partial class OverlayWindow : Window
 
         _handFill = handFill;
         PointerHand.Fill = handFill;
-        PointerHandPinchedBody.Fill = PinchBrush;
+        PointerHandPinchedBody.Fill = handFill;
         PointerHandPinchedLines.Fill = contrasting;
         PointerHandPinchedLines.Stroke = contrasting;
         PointerHand.Stroke = contrasting;
@@ -89,15 +89,6 @@ public partial class OverlayWindow : Window
         stickBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, stickColor.R, stickColor.G, stickColor.B), 1));
         stickBrush.Freeze();
         PointerStick.Background = stickBrush;
-    }
-
-    private static readonly Brush PinchBrush = CreatePinchBrush();
-
-    private static Brush CreatePinchBrush()
-    {
-        SolidColorBrush brush = new(Color.FromRgb(255, 176, 32));
-        brush.Freeze();
-        return brush;
     }
 
     /// <summary>Swaps to the pinched hand drawing while a resize/move cursor would show.</summary>
