@@ -16,6 +16,8 @@
 Pokey for Windows is a free and open-source .NET 10 WPF tray app intended to
 bring Pokey-style cursor movement to Windows.
 
+Original Version: https://pokeyapp.com/
+
 Press **Ctrl+Alt+P** to start or stop it. While active, the app follows the
 pointer across monitors and escalates its hand-drawn impact bursts as clicks
 arrive faster. The tray icon provides status and controls without keeping a
