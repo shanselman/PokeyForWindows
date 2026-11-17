@@ -18,6 +18,7 @@ internal sealed class AppSettings
     public double PointerLength { get; set; } = 400;
     public bool StartWithWindows { get; set; }
     public bool AutoCheckForUpdates { get; set; } = true;
+    public bool ShowButton { get; set; } = true;
 
     internal void Normalize()
     {

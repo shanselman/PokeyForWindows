@@ -15,6 +15,7 @@ internal sealed class AppController : IDisposable
     private readonly TapSeriesController _tapSeries = new();
     private readonly TrayIconController _tray;
     private readonly SettingsWindow _settingsWindow;
+    private readonly PokeyButtonWindow _button = new();
     private readonly AppUpdater _updater;
     private readonly CancellationTokenSource _lifetime = new();
 
@@ -65,6 +66,8 @@ internal sealed class AppController : IDisposable
             SetEnabled(true, persist: false);
         }
 
+        ApplyButtonVisibility();
+
         if (_settingsStore.RecoveryNotice is not null)
         {
             _tray.ShowError("Settings were reset", _settingsStore.RecoveryNotice);
@@ -90,6 +93,7 @@ internal sealed class AppController : IDisposable
         SaveSettings();
         _updater.Dispose();
         _settingsWindow.CloseForExit();
+        _button.Close();
         _tray.Dispose();
         _hotkey.Dispose();
         _mouseHook.Dispose();
@@ -111,6 +115,8 @@ internal sealed class AppController : IDisposable
         _tray.UpdateRequested += CheckForUpdates;
         _tray.ExitRequested += Exit;
         _settingsWindow.ToggleRequested += ToggleEnabled;
+        _button.ToggleRequested += ToggleEnabled;
+        _button.SettingsRequested += ShowSettings;
         _settingsWindow.SettingsChanged += ApplySettings;
         _settingsWindow.UpdateRequested += CheckForUpdates;
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
@@ -171,6 +177,7 @@ internal sealed class AppController : IDisposable
 
         _tray.ApplySettings(_settings);
         _settingsWindow.RefreshControls();
+        _button.SetPointerEnabled(_settings.Enabled);
     }
 
     private void DeactivateRuntime()
@@ -232,6 +239,7 @@ internal sealed class AppController : IDisposable
         {
             SettingsStore.SetAutoStart(_settings.StartWithWindows);
             _overlays.ApplySettings(_settings);
+            ApplyButtonVisibility();
             SaveSettings();
             _tray.ApplySettings(_settings);
             _settingsWindow.RefreshControls();
@@ -243,6 +251,19 @@ internal sealed class AppController : IDisposable
         {
             AppDiagnostics.Error("Could not apply settings.", ex);
             _tray.ShowError("Settings were not saved", ex.Message);
+        }
+    }
+
+    private void ApplyButtonVisibility()
+    {
+        _button.SetPointerEnabled(_settings.Enabled);
+        if (_settings.ShowButton)
+        {
+            _button.ShowButton();
+        }
+        else
+        {
+            _button.HideButton();
         }
     }
 

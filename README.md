@@ -3,6 +3,13 @@
 > releases when Azure Trusted Signing is not configured, so every release
 > includes ready-to-run `PokeyForWindows.exe` ZIPs (x64 and ARM64).
 > Windows SmartScreen may warn about unsigned builds.
+>
+> - A small **Pokey button** sits at the bottom left of the primary monitor.
+>   Click it to turn the pointer on or off, use the gear to open the settings.
+>   It can be hidden in the settings ("Show Pokey button").
+> - The in-app updater now checks the releases of this fork. Fork builds are
+>   unsigned, so the signature check is skipped; downloads are still limited to
+>   HTTPS URLs of this repository's releases.
 
 # Pokey for Windows
 
@@ -23,7 +30,7 @@ window open.
 ## Download
 
 Download the latest signed release from
-[GitHub Releases](https://github.com/shanselman/pokeyforwindows/releases/latest).
+[GitHub Releases](https://github.com/digital-workshop/pokeyforwindows/releases/latest).
 
 | Asset | Windows platform |
 |---|---|

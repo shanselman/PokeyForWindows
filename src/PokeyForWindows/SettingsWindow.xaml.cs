@@ -33,6 +33,7 @@ public partial class SettingsWindow : Window
         AnimateOnClickCheckBox.IsChecked = _settings.AnimateOnClick;
         StartWithWindowsCheckBox.IsChecked = _settings.StartWithWindows;
         AutoUpdateCheckBox.IsChecked = _settings.AutoCheckForUpdates;
+        ShowButtonCheckBox.IsChecked = _settings.ShowButton;
     }
 
     internal void CloseForExit()
@@ -56,6 +57,7 @@ public partial class SettingsWindow : Window
         _settings.AnimateOnClick = AnimateOnClickCheckBox.IsChecked == true;
         _settings.StartWithWindows = StartWithWindowsCheckBox.IsChecked == true;
         _settings.AutoCheckForUpdates = AutoUpdateCheckBox.IsChecked == true;
+        _settings.ShowButton = ShowButtonCheckBox.IsChecked == true;
         SettingsChanged?.Invoke();
         Hide();
     }
