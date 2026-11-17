@@ -65,7 +65,7 @@ internal sealed class PokeyButtonWindow : Window
         toggleButton.Click += (_, _) => ToggleRequested?.Invoke();
 
         System.Windows.Controls.Button settingsButton = CreateButton(
-            new TextBlock { Text = "⚙", FontSize = 15 },
+            CreateLucideSettingsIcon(),
             "Open Pokey settings");
         settingsButton.Margin = new Thickness(4, 0, 0, 0);
         settingsButton.Click += (_, _) => SettingsRequested?.Invoke();
@@ -132,6 +132,37 @@ internal sealed class PokeyButtonWindow : Window
         };
         System.Windows.Automation.AutomationProperties.SetName(button, name);
         return button;
+    }
+
+    // Lucide "settings" icon (https://lucide.dev, ISC license), 24x24 stroke icon.
+    private static UIElement CreateLucideSettingsIcon()
+    {
+        System.Windows.Media.Brush stroke = System.Windows.Media.Brushes.White;
+        Canvas canvas = new() { Width = 24, Height = 24 };
+        canvas.Children.Add(new System.Windows.Shapes.Path
+        {
+            Data = Geometry.Parse(
+                "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 " +
+                "2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 " +
+                "2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051 " +
+                "a2.34 2.34 0 0 0 3.319-1.915"),
+            Stroke = stroke,
+            StrokeThickness = 2,
+            StrokeLineJoin = PenLineJoin.Round,
+            StrokeStartLineCap = PenLineCap.Round,
+            StrokeEndLineCap = PenLineCap.Round
+        });
+        System.Windows.Shapes.Ellipse hub = new()
+        {
+            Width = 6,
+            Height = 6,
+            Stroke = stroke,
+            StrokeThickness = 2
+        };
+        Canvas.SetLeft(hub, 9);
+        Canvas.SetTop(hub, 9);
+        canvas.Children.Add(hub);
+        return new Viewbox { Width = 16, Height = 16, Child = canvas };
     }
 
     private static System.Windows.Media.Brush Freeze(SolidColorBrush brush)
